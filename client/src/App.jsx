@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import ReactFlow, { Background, Controls } from "reactflow";
 import "reactflow/dist/style.css";
 import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
 
 import InputNode from "./components/InputNode";
 import ResultNode from "./components/ResultNode";
@@ -57,7 +58,7 @@ export default function App() {
   }, [prompt, result]);
 
   const runFlow = async () => {
-    if (!prompt) return alert("Please enter a prompt in the Input Node!");
+    if (!prompt) return toast.error("Please enter a prompt in the Input Node!");
     setIsLoading(true);
 
     const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -65,31 +66,33 @@ export default function App() {
     try {
       const res = await axios.post(`${API_BASE_URL}/api/ai/ask-ai`, { prompt });
       setResult(res.data.result);
+      toast.success("AI request successful!");
     } catch (err) {
       console.error(err);
-      alert("AI request failed. Check your server and API key.");
+      toast.error("AI request failed. Check your server and API key.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const saveData = async () => {
-    if (!result) return alert("Nothing to save yet!");
+    if (!result) return toast.error("Nothing to save yet!");
     const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
     try {
       await axios.post(`${API_BASE_URL}/api/ai/save`, {
         prompt,
         response: result,
       });
-      alert("Conversation saved to database!");
+      toast.success("Conversation saved to database!");
     } catch (err) {
       console.error(err);
-      alert("Save failed");
+      toast.error("Save failed");
     }
   };
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 overflow-hidden font-sans">
+      <Toaster position="bottom-left" />
       {/* Modern Header */}
       <header className="h-16 bg-white/80 backdrop-blur-xl border-b border-slate-200 px-6 flex justify-between items-center z-10 shrink-0">
         <div className="flex items-center space-x-3">
